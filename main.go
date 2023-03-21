@@ -19,24 +19,30 @@ var (
 func main() {
 	flag.Parse()
 
+	log.Println("Testing...")
+	if err := runTool(); err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+	log.Println("All samples passed successfully")
+}
+
+func runTool() error {
 	samples, err := readSamples(*dataFile)
 	if err != nil {
-		log.Fatalf("failed to read samples: %v", err)
+		return fmt.Errorf("failed to read samples: %w", err)
 	}
 
 	executableFilename, err := testapp.Build(*mainFile)
 	if err != nil {
-		log.Fatalf("failed to build program: %v", err)
+		return fmt.Errorf("failed to build program: %w", err)
 	}
 
 	for sampleIndex, sample := range samples {
-		log.Printf("running sample: %d", sampleIndex+1)
-
 		if err := runSample(executableFilename, sample); err != nil {
-			log.Fatalf("sample failure: %v", err)
+			return fmt.Errorf("sample %d failure: %w", sampleIndex+1, err)
 		}
 	}
-	log.Println("all samples passed successfully")
+	return nil
 }
 
 func readSamples(filename string) ([]testdata.Sample, error) {
